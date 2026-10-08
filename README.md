@@ -44,6 +44,26 @@ Setiap `git push`, Vercel otomatis men-deploy versi terbaru. Cek hasilnya di lin
 
 Urutan yang disarankan: US-01, US-02, US-03, US-04, US-05, US-06, lalu fitur bonus. Daftar lengkap ada di `docs/user-stories.md`.
 
+## Status Pengerjaan Fitur (User Story)
+
+### Fitur Wajib (Selesai)
+- [x] **US-01 Katalog dari database:** Menampilkan semua produk dari tabel `produk` di Supabase di sisi server secara dinamis.
+- [x] **US-02 Detail produk:** Menampilkan detail satu produk di `/produk/[id]` dari database Supabase, dan menampilkan halaman 404 jika produk tidak ditemukan.
+- [x] **US-03 Pesan via WhatsApp:** Tombol "Pesan via WhatsApp" membuka tautan WhatsApp ke nomor toko dengan pesan otomatis berisi nama dan harga produk dalam format rupiah di tab baru.
+- [x] **US-04 Login admin:** Login pemilik toko menggunakan Supabase Auth (`@supabase/ssr` & cookies) diproses di Server Action, dilengkapi tombol Keluar yang mengakhiri sesi.
+- [x] **US-05 Ganti password:** Fitur ganti password admin di `/admin/password` diproses di Server Action dengan validasi server (minimal 8 karakter dan konfirmasi cocok).
+- [x] **US-06 Proteksi halaman admin:** Memproteksi seluruh rute `/admin` menggunakan `proxy.js` di root proyek dan memverifikasi sesi login admin pada Server Action mutasi.
+
+### Fitur Bonus
+- [ ] **US-07:** List produk di halaman admin dari database
+- [ ] **US-08:** Tambah produk (harus terkunci login)
+- [ ] **US-09:** Ubah produk (harus terkunci login)
+- [ ] **US-10:** Hapus produk (harus terkunci login)
+- [ ] **US-11:** Filter kategori atau pencarian
+- [ ] **US-12:** Pilih jumlah atau varian
+- [ ] **US-13:** Bisa di-install di HP (PWA)
+- [ ] **US-14:** Deskripsi produk dibuat AI
+
 ## Isi repo
 
 | File atau folder | Isi |
@@ -53,7 +73,9 @@ Urutan yang disarankan: US-01, US-02, US-03, US-04, US-05, US-06, lalu fitur bon
 | `PROMPTS.md` | Jurnal prompt, wajib diisi |
 | `docs/` | Problem statement, PRD, user story, rancangan teknis, skema database, checklist |
 | `lib/toko.js` | Nama toko, nomor WhatsApp, alamat, jam buka |
-| `app/` | Halaman aplikasi |
+| `lib/supabase/` | Koneksi Supabase server (koneksi server & sesi admin) |
+| `proxy.js` | Proteksi rute admin (Next.js 16) |
+| `app/` | Halaman aplikasi & Server Actions |
 | `components/` | Komponen tampilan |
 
 ## Menyesuaikan dengan usahamu
@@ -76,7 +98,16 @@ Urutan yang disarankan: US-01, US-02, US-03, US-04, US-05, US-06, lalu fitur bon
 
 ## Tentang aplikasi ini
 
-- **Nama usaha:**
-- **Pembuat:**
-- **Link aplikasi:**
+- **Nama usaha:** Nasi Cumi Hitam Madura Pak Kris
+- **Pembuat:** 
+- **Link aplikasi:** 
+- **Fitur yang diselesaikan:** US-01 sampai US-06 (Seluruh fitur wajib selesai)
 - **Fitur bonus yang dikerjakan:**
+  - [ ] US-07 List produk di halaman admin dari database
+  - [ ] US-08 Tambah produk (harus terkunci login)
+  - [ ] US-09 Ubah produk (harus terkunci login)
+  - [ ] US-10 Hapus produk (harus terkunci login)
+  - [ ] US-11 Filter kategori atau pencarian
+  - [ ] US-12 Pilih jumlah atau varian
+  - [ ] US-13 Bisa di-install di HP (PWA)
+  - [ ] US-14 Deskripsi produk dibuat AI
