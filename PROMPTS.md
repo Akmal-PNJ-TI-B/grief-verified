@@ -245,9 +245,146 @@ Pekerjaan untuk **US-03: Pesan via WhatsApp** telah selesai.
 ## US-04 Login admin
 
 **Prompt:**
+Baca AGENTS.md bagian aturan keamanan dan docs/user-stories.md bagian US-04.
 
+Buat login admin memakai Supabase Auth (email dan password) dengan @supabase/ssr dan cookie, memakai SUPABASE_URL dan SUPABASE_PUBLISHABLE_KEY. Login diproses dengan Server Action di app/admin/actions.js dan disambungkan ke form di app/admin/login/page.jsx. Login berhasil diarahkan ke /admin; login gagal menampilkan pesan error yang jelas di halaman login. Buat juga tombol "Keluar" di components/NavAdmin.jsx berfungsi: mengakhiri sesi lalu kembali ke /admin/login. Jangan ubah tampilan. Hapus CatatanBelumAktif dari halaman login.
 **Hasil:**
+Ran command: Inspect @supabase/ssr (`node -e "
+const ssr = require('@supabase/ssr');
+console.log('SSR exports:', Object.keys(ssr));
+"`)
+Ran command: Read @supabase/ssr types (`node -e "
+const fs = require('fs');
+const pkg = require('./node_modules/@supabase/ssr/package.json');
+console.log('main:', pkg.main, 'types:', pkg.types);
+const dts = fs.readFileSync('./node_modules/@supabase/ssr/dist/index.d.ts', 'utf8');
+console.log(dts.slice(0, 1000));
+"`)
+Ran command: Read module index.d.ts (`node -e "
+const fs = require('fs');
+const dts = fs.readFileSync('./node_modules/@supabase/ssr/dist/module/index.d.ts', 'utf8');
+console.log(dts.slice(0, 1000));
+"`)
+Ran command: Read createServerClient.d.ts (`node -e "
+const fs = require('fs');
+const dts = fs.readFileSync('./node_modules/@supabase/ssr/dist/module/createServerClient.d.ts', 'utf8');
+console.log(dts);
+"`)
+Viewed page.jsx:1-29
+Viewed NavAdmin.jsx:1-19
+Ran command: Search for use client (`Get-ChildItem -Path app, components -Recurse -File | Select-String -Pattern "use client"`)
+Viewed page.jsx:1-43
+Ran command: Check Supabase Auth users (`node -e "
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const env = fs.readFileSync('.env.local', 'utf8');
+let url = '', secret = '', pub = '';
+for (const line of env.split('\n')) {
+  if (line.startsWith('SUPABASE_URL=')) url = line.split('=')[1].trim();
+  if (line.startsWith('SUPABASE_SECRET_KEY=')) secret = line.split('=')[1].trim();
+  if (line.startsWith('SUPABASE_PUBLISHABLE_KEY=')) pub = line.split('=')[1].trim();
+}
+const adminClient = createClient(url, secret);
+adminClient.auth.admin.listUsers().then(({ data, error }) => {
+  if (error) console.error('List users error:', error);
+  else console.log('Users count:', data.users.length, 'Users:', data.users.map(u => ({ id: u.id, email: u.email })));
+});
+"`)
+Created server.js
+Created actions.js
+Created page.jsx
+Created NavAdmin.jsx
+Ran command: Build project for US-04 (`npm run build`)
+Ran command: Start Next.js server on port 3008 (`npx next start -p 3008`)
+Ran command: Test login page HTML (`node -e "
+async function test() {
+  const res = await fetch('http://localhost:3008/admin/login');
+  const text = await res.text();
+  console.log('Login page status:', res.status);
+  console.log('Contains Masuk admin:', text.includes('Masuk admin'));
+  console.log('Contains CatatanBelumAktif:', text.includes('Login belum berfungsi'));
+  console.log('Contains Email input:', text.includes('name=\"email\"'));
+  console.log('Contains Password input:', text.includes('name=\"password\"'));
+  console.log('Contains Masuk button:', text.includes('Masuk'));
+}
+test();
+"`)
+Created test_login.mjs
+Ran command: Run test_login.mjs (`node "C:\Users\RENTAL\.gemini\antigravity\brain\5b6ff0b0-0fe0-4311-91fe-f52deee8f8a1\scratch\test_login.mjs"`)
+Created test_action.mjs
+Ran command: Run test_action.mjs (`node "C:\Users\RENTAL\.gemini\antigravity\brain\5b6ff0b0-0fe0-4311-91fe-f52deee8f8a1\scratch\test_action.mjs"`)
+Ran command: Test wrong credentials on Supabase (`node --input-type=module -e "
+import { readFileSync } from 'fs';
+import { createServerClient } from '@supabase/ssr';
 
+const env = readFileSync('.env.local', 'utf8');
+for (const line of env.split('\n')) {
+  const [k, ...v] = line.split('=');
+  if (k && v.length) process.env[k.trim()] = v.join('=').trim();
+}
+
+const url = process.env.SUPABASE_URL;
+const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+const cookiesStore = new Map();
+const supabase = createServerClient(url, key, {
+  cookies: {
+    getAll() {
+      return Array.from(cookiesStore.entries()).map(([name, value]) => ({ name, value }));
+    },
+    setAll(cookiesToSet) {
+      cookiesToSet.forEach(({ name, value }) => cookiesStore.set(name, value));
+    }
+  }
+});
+
+async function run() {
+  console.log('Testing wrong credentials...');
+  const res1 = await supabase.auth.signInWithPassword({
+    email: 'wrong@example.com',
+    password: 'wrongpassword'
+  });
+  console.log('Wrong credentials error message:', res1.error ? res1.error.message : 'no error');
+}
+
+run().catch(console.error);
+"`)
+Killed task Start Next.js server on port 3008
+
+Pekerjaan untuk **US-04: Login admin** telah selesai.
+
+### File yang Dibuat dan Diubah
+1. [`lib/supabase/server.js`](file:///c:/Users/RENTAL/Documents/grief-verified/lib/supabase/server.js)
+   - Menambahkan fungsi `createClientSesi` yang menggunakan `createServerClient` dari `@supabase/ssr`, `cookies` dari `next/headers`, serta `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` untuk mengelola sesi admin (autentikasi dan cookie login).
+2. [`app/admin/actions.js`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/actions.js)
+   - Membuat Server Action `login` (alias `masuk`) yang memvalidasi input email/password, melakukan `signInWithPassword` melalui Supabase Auth, menampilkan pesan error jika gagal, dan mengarahkan ke `/admin` jika berhasil.
+   - Membuat Server Action `keluar` (alias `logout`) yang memanggil `signOut()` dan mengarahkan kembali ke `/admin/login`.
+3. [`app/admin/login/page.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/login/page.jsx)
+   - Menyambungkan form login ke Server Action menggunakan `useActionState`.
+   - Menampilkan pesan error yang jelas jika kredensial salah atau gagal login.
+   - Menghapus komponen `CatatanBelumAktif`.
+   - Mempertahankan tata letak dan kelas tampilan asli.
+4. [`components/NavAdmin.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/components/NavAdmin.jsx)
+   - Menghubungkan tombol "Keluar" ke Server Action `keluar` menggunakan form action server tanpa mengubah styling tampilan.
+
+---
+
+### Cara Mengetes
+1. Jalankan aplikasi secara lokal jika belum berjalan:
+   ```bash
+   npm run dev
+   ```
+2. Buka `http://localhost:3000/admin/login` di browser:
+   - Pastikan komponen `CatatanBelumAktif` sudah tidak ada di halaman login.
+3. Uji login gagal:
+   - Masukkan email atau password yang salah, lalu klik **Masuk**.
+   - Pastikan muncul pesan error yang jelas (misalnya *"Email atau password salah. Silakan coba lagi."*).
+4. Uji login berhasil:
+   - Masukkan email dan password akun admin Supabase yang valid, lalu klik **Masuk**.
+   - Browser akan diarahkan ke halaman `/admin`.
+5. Uji tombol "Keluar":
+   - Pada navigasi admin di `/admin`, klik tombol **Keluar**.
+   - Sesi akan diakhiri dan browser akan dialihkan kembali ke `/admin/login`.
 **Perbaikan:**
 
 ## US-05 Ganti password
