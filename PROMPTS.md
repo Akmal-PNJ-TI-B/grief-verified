@@ -390,9 +390,70 @@ Pekerjaan untuk **US-04: Login admin** telah selesai.
 ## US-05 Ganti password
 
 **Prompt:**
+Baca docs/user-stories.md bagian US-05.
 
+Buat Server Action ganti password di app/admin/actions.js untuk admin yang sedang login, memakai Supabase Auth. Validasi di server: password baru minimal 8 karakter dan harus sama dengan konfirmasi. Tampilkan pesan berhasil atau pesan error yang jelas di halaman. Sambungkan ke form di app/admin/password/page.jsx tanpa mengubah tampilannya. Hapus CatatanBelumAktif dari halaman ini.
 **Hasil:**
+Viewed page.jsx:1-43
+Created actions.js
+Created page.jsx
+Ran command: Build project for US-05 (`npm run build`)
+Ran command: Start Next.js server on port 3009 (`npx next start -p 3009`)
+Created test_password.mjs
+Ran command: Run test_password.mjs (`node "C:\Users\RENTAL\.gemini\antigravity\brain\5b6ff0b0-0fe0-4311-91fe-f52deee8f8a1\scratch\test_password.mjs"`)
+Ran command: Test gantiPassword validations (`node --input-type=module -e "
+import { gantiPassword } from './app/admin/actions.js';
 
+async function testValidation() {
+  const fd1 = new FormData();
+  fd1.append('password_baru', '12345');
+  fd1.append('konfirmasi_password', '12345');
+  const res1 = await gantiPassword(null, fd1);
+  console.log('Short password result:', res1);
+
+  const fd2 = new FormData();
+  fd2.append('password_baru', '12345678');
+  fd2.append('konfirmasi_password', '12345679');
+  const res2 = await gantiPassword(null, fd2);
+  console.log('Mismatch password result:', res2);
+}
+
+testValidation().catch(console.error);
+"`)
+Killed task Start Next.js server on port 3009
+
+Pekerjaan untuk **US-05: Ganti password** telah selesai.
+
+### File yang Diubah
+1. [`app/admin/actions.js`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/actions.js)
+   - Menambahkan Server Action `gantiPassword` (alias `updatePassword`).
+   - Melakukan validasi di server: memastikan kolom terisi, password baru minimal 8 karakter, dan password baru cocok dengan konfirmasi password.
+   - Memeriksa sesi admin yang sedang login (`supabase.auth.getUser()`) sebelum melakukan mutasi data sesuai aturan keamanan.
+   - Memperbarui password menggunakan Supabase Auth (`supabase.auth.updateUser({ password })`).
+   - Mengembalikan pesan sukses atau pesan error yang jelas.
+2. [`app/admin/password/page.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/password/page.jsx)
+   - Menyambungkan form ke Server Action `gantiPassword` menggunakan `useActionState`.
+   - Menampilkan notifikasi pesan berhasil (`state.success`) atau pesan error (`state.error`) dengan token desain Tailwind yang konsisten.
+   - Menghapus komponen `CatatanBelumAktif` tanpa mengubah tata letak form dan navigasi.
+
+---
+
+### Cara Mengetes
+1. Jalankan aplikasi secara lokal:
+   ```bash
+   npm run dev
+   ```
+2. Buka `http://localhost:3000/admin/login`, lalu login dengan kredensial admin yang valid.
+3. Setelah masuk, buka menu atau halaman `http://localhost:3000/admin/password`:
+   - Pastikan komponen `CatatanBelumAktif` sudah tidak ada di halaman ini.
+4. Uji validasi error:
+   - Masukkan password baru kurang dari 8 karakter (misal: `12345`), klik **Simpan password** -> Muncul pesan error *"Password baru minimal 8 karakter."*
+   - Masukkan password baru minimal 8 karakter tetapi konfirmasinya berbeda, klik **Simpan password** -> Muncul pesan error *"Password baru dan konfirmasi password tidak sama."*
+5. Uji ganti password berhasil:
+   - Masukkan password baru yang valid (minimal 8 karakter) dan konfirmasi yang sama, klik **Simpan password**.
+   - Muncul notifikasi hijau *"Password berhasil diganti."*
+6. Uji login kembali:
+   - Klik **Keluar**, lalu coba masuk kembali di `/admin/login` menggunakan password baru.
 **Perbaikan:**
 
 ## US-06 Proteksi halaman admin
