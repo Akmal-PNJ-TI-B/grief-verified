@@ -129,17 +129,117 @@ Pekerjaan untuk **US-01: Katalog dari database** telah selesai.
 ## US-02 Detail produk
 
 **Prompt:**
+Baca docs/user-stories.md bagian US-02.
 
+Ubah app/produk/[id]/page.jsx supaya mengambil satu produk dari tabel "produk" di Supabase berdasarkan id di URL, di sisi server, memakai koneksi Supabase yang sudah dibuat di lib/supabase. Kalau produk tidak ditemukan, panggil notFound(). Jangan ubah tampilannya. Hapus CatatanBelumAktif dari halaman ini, tapi biarkan tombol WhatsApp.
 **Hasil:**
+Viewed page.jsx:1-41
+Viewed not-found.jsx:1-12
+Created page.jsx
+Ran command: Build project for US-02 verification (`npm run build`)
+Ran command: Start Next.js server on port 3006 (`npx next start -p 3006`)
+Ran command: Test product detail endpoints (`node -e "
+async function test() {
+  const r1 = await fetch('http://localhost:3006/produk/1');
+  const t1 = await r1.text();
+  console.log('Produk 1 status:', r1.status);
+  console.log('Produk 1 has Kopi:', t1.includes('Kopi Bubuk Robusta'));
+  console.log('Produk 1 has CatatanBelumAktif:', t1.includes('Tombol pesan belum berfungsi'));
+  console.log('Produk 1 has WhatsApp button:', t1.includes('Pesan via WhatsApp'));
 
+  const r2 = await fetch('http://localhost:3006/produk/9999');
+  const t2 = await r2.text();
+  console.log('Produk 9999 status:', r2.status);
+  console.log('Produk 9999 has not found:', t2.includes('Halaman tidak ditemukan'));
+
+  const r3 = await fetch('http://localhost:3006/produk/abc');
+  const t3 = await r3.text();
+  console.log('Produk abc status:', r3.status);
+  console.log('Produk abc has not found:', t3.includes('Halaman tidak ditemukan'));
+}
+test();
+"`)
+Killed task Start Next.js server on port 3006
+
+Pekerjaan untuk **US-02: Detail produk** telah selesai.
+
+### File yang Diubah
+- [`app/produk/[id]/page.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/app/produk/%5Bid%5D/page.jsx)
+  - Mengambil data produk dari tabel `produk` di Supabase berdasarkan parameter `id` URL di sisi server menggunakan `createClientServer()` dari `lib/supabase/server`.
+  - Memanggil `notFound()` jika produk tidak ditemukan di database atau jika parameter `id` tidak valid.
+  - Mempertahankan tampilan, struktur elemen, dan tombol [`TombolWhatsApp`](file:///c:/Users/RENTAL/Documents/grief-verified/components/TombolWhatsApp.jsx).
+  - Menghapus komponen `CatatanBelumAktif` dan referensi ke `data-contoh.js`.
+
+---
+
+### Cara Mengetes
+1. Jalankan server lokal jika belum berjalan:
+   ```bash
+   npm run dev
+   ```
+2. Buka salah satu halaman produk yang ada di database, misalnya:
+   - `http://localhost:3000/produk/1`
+   - Pastikan informasi produk (foto, kategori, nama, harga rupiah, dan deskripsi) tampil dengan benar.
+   - Pastikan tombol "Pesan via WhatsApp" tetap ada dan komponen `CatatanBelumAktif` sudah hilang.
+3. Buka halaman produk dengan ID yang tidak ada atau ID acak, misalnya:
+   - `http://localhost:3000/produk/9999`
+   - Pastikan halaman menampilkan tampilan *"Halaman tidak ditemukan"* (404).
 **Perbaikan:**
 
 ## US-03 Pesan via WhatsApp
 
 **Prompt:**
+Baca docs/rancangan-teknis.md bagian "Pesan WhatsApp (US-03)".
 
+Ubah components/TombolWhatsApp.jsx menjadi tautan yang membuka https://wa.me/ ke nomor di lib/toko.js, dengan pesan otomatis berisi nama dan harga produk dalam format rupiah. Pesan di-encode dengan encodeURIComponent dan dibuka di tab baru. Pertahankan tampilan tombolnya. Hapus CatatanBelumAktif yang menyebut US-03 di halaman detail produk.
 **Hasil:**
+Viewed toko.js:1-10
+Viewed format.js:1-8
+Viewed TombolWhatsApp.jsx:1-13
+Viewed PROMPTS.md:1-172
+Viewed page.jsx:1-55
+Created TombolWhatsApp.jsx
+Ran command: Build project for US-03 (`npm run build`)
+Ran command: Start Next.js server on port 3007 (`npx next start -p 3007`)
+Ran command: Verify WhatsApp link on /produk/1 (`node -e "
+fetch('http://localhost:3007/produk/1')
+  .then(r => r.text())
+  .then(t => {
+    const waMatch = t.match(/href=\"(https:\/\/wa\.me\/[^\"]+)\"/);
+    console.log('WhatsApp Link:', waMatch ? waMatch[1] : 'NOT FOUND');
+    console.log('Target _blank:', t.includes('target=\"_blank\"'));
+    console.log('Rel noopener:', t.includes('rel=\"noopener noreferrer\"'));
+    console.log('Button text:', t.includes('Pesan via WhatsApp'));
+    console.log('CatatanBelumAktif present:', t.includes('Tombol pesan belum berfungsi'));
+  });
+"`)
+Ran command: Test WhatsApp link output (`node -e 'fetch("http://localhost:3007/produk/1").then(r => r.text()).then(t => { console.log("Has wa.me:", t.includes("wa.me")); console.log("Has blank:", t.includes("_blank")); console.log("Has Catatan:", t.includes("Tombol pesan belum berfungsi")); })'`)
+Ran command: Fetch /produk/1 HTML (`curl.exe -s http://localhost:3007/produk/1`)
+Killed task Start Next.js server on port 3007
 
+Pekerjaan untuk **US-03: Pesan via WhatsApp** telah selesai.
+
+### File yang Diubah
+- [`components/TombolWhatsApp.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/components/TombolWhatsApp.jsx)
+  - Mengubah elemen `<button>` menjadi elemen tautan `<a>` dengan atribut `target="_blank"` dan `rel="noopener noreferrer"`.
+  - Mengarahkan tautan ke format `https://wa.me/<nomor>?text=<pesan>` menggunakan `nomorWhatsApp` dari [`lib/toko.js`](file:///c:/Users/RENTAL/Documents/grief-verified/lib/toko.js).
+  - Pesan otomatis diformat dengan nama dan harga produk dalam format rupiah ([`lib/format.js`](file:///c:/Users/RENTAL/Documents/grief-verified/lib/format.js)) dan di-encode menggunakan `encodeURIComponent`.
+  - Mempertahankan tampilan dan kelas styling tombol asli.
+- [`app/produk/[id]/page.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/app/produk/%5Bid%5D/page.jsx)
+  - Memastikan komponen `CatatanBelumAktif` yang menyebutkan US-03 sudah tidak ada di halaman detail produk.
+
+---
+
+### Cara Mengetes
+1. Jalankan aplikasi secara lokal jika belum berjalan:
+   ```bash
+   npm run dev
+   ```
+2. Buka halaman detail salah satu produk, misalnya `http://localhost:3000/produk/1`.
+3. Klik tombol **"Pesan via WhatsApp"**:
+   - Pastikan tab baru terbuka menuju alamat `https://wa.me/628559901167?text=...`.
+   - Pastikan teks pesan WhatsApp otomatis terisi nama produk dan harganya, contoh:
+     `Halo, saya ingin memesan Kopi Bubuk Robusta 250 g (Rp 45.000).`
 **Perbaikan:**
 
 ## US-04 Login admin
