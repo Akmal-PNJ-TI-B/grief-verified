@@ -459,9 +459,110 @@ Pekerjaan untuk **US-05: Ganti password** telah selesai.
 ## US-06 Proteksi halaman admin
 
 **Prompt:**
+Baca AGENTS.md aturan keamanan nomor 3 dan 4, dan docs/user-stories.md bagian US-06.
 
+Buat file proxy.js di root proyek (Next.js 16). Semua rute /admin kecuali /admin/login wajib login dengan Supabase Auth; kalau belum login, alihkan ke /admin/login. Pastikan juga setiap Server Action yang mengubah data memeriksa login di server. Hapus CatatanBelumAktif dari halaman /admin.
 **Hasil:**
+Ran command: Search proxy.js in Next.js source (`node -e "
+const fs = require('fs');
+const path = require('path');
+const nextDir = './node_modules/next';
+function searchFiles(dir, pattern) {
+  const list = fs.readdirSync(dir);
+  for (const file of list) {
+    const full = path.join(dir, file);
+    const stat = fs.statSync(full);
+    if (stat.isDirectory() && !full.includes('.cache')) {
+      searchFiles(full, pattern);
+    } else if (file.endsWith('.js') || file.endsWith('.ts')) {
+      const content = fs.readFileSync(full, 'utf8');
+      if (content.includes('proxy.js') || content.includes('MIDDLEWARE_FILENAME') || content.includes('PROXY_FILENAME')) {
+        console.log('Found in:', full);
+      }
+    }
+  }
+}
+searchFiles(path.join(nextDir, 'dist'), 'proxy');
+"`)
+Checked task Search proxy.js in Next.js source
+Ran command: Check Next.js constants (`node -e "
+const constants = require('next/dist/lib/constants');
+console.log('MIDDLEWARE_FILENAME:', constants.MIDDLEWARE_FILENAME);
+console.log('MIDDLEWARE_LOCATION_REGEXP:', constants.MIDDLEWARE_LOCATION_REGEXP);
+for (const [k, v] of Object.entries(constants)) {
+  if (k.toLowerCase().includes('proxy') || String(v).toLowerCase().includes('proxy')) {
+    console.log(k, v);
+  }
+}
+"`)
+Ran command: Check get-page-static-info.js (`node -e "
+const fs = require('fs');
+const code = fs.readFileSync('node_modules/next/dist/build/analysis/get-page-static-info.js', 'utf8');
+const lines = code.split('\n');
+lines.forEach((l, i) => {
+  if (l.includes('PROXY') || l.includes('proxy')) console.log(i + ': ' + l.slice(0, 100));
+});
+"`)
+Ran command: Check proxy exports (`node -e "
+const fs = require('fs');
+const code = fs.readFileSync('node_modules/next/dist/build/analysis/get-page-static-info.js', 'utf8');
+const lines = code.split('\n');
+console.log(lines.slice(255, 315).join('\n'));
+"`)
+Ran command: Check config in proxy.js (`node -e "
+const fs = require('fs');
+const code = fs.readFileSync('node_modules/next/dist/build/analysis/get-page-static-info.js', 'utf8');
+const lines = code.split('\n');
+console.log(lines.slice(600, 640).join('\n'));
+"`)
+Ran command: Check matcher in get-page-static-info.js (`node -e "
+const fs = require('fs');
+const code = fs.readFileSync('node_modules/next/dist/build/analysis/get-page-static-info.js', 'utf8');
+const lines = code.split('\n');
+lines.forEach((l, i) => {
+  if (l.includes('matcher')) console.log(i + ': ' + l.slice(0, 100));
+});
+"`)
+Ran command: Search for use server directives (`Get-ChildItem -Path app, lib, components -Recurse -File | Select-String -Pattern "use server"`)
+Viewed page.jsx:1-28
+Viewed page.jsx:1-16
+Ran command: Check if middleware.js exists (`Test-Path middleware.js`)
+Created proxy.js
+Created page.jsx
+Ran command: Build Next.js with proxy.js (`npm run build`)
+Ran command: Start Next.js server on port 3010 (`npx next start -p 3010`)
+Created test_proxy.mjs
+Ran command: Run test_proxy.mjs (`node "C:\Users\RENTAL\.gemini\antigravity\brain\5b6ff0b0-0fe0-4311-91fe-f52deee8f8a1\scratch\test_proxy.mjs"`)
+Killed task Start Next.js server on port 3010
 
+Pekerjaan untuk **US-06: Proteksi halaman admin** telah selesai.
+
+### File yang Dibuat dan Diubah
+1. [`proxy.js`](file:///c:/Users/RENTAL/Documents/grief-verified/proxy.js)
+   - Dibuat di root proyek sesuai konvensi Next.js 16 (pengganti `middleware.js`).
+   - Memeriksa sesi pengguna menggunakan `@supabase/ssr` (`supabase.auth.getUser()`).
+   - Melindungi seluruh rute `/admin` (dan sub-rutenya seperti `/admin/password`, `/admin/produk/baru`, dll.) kecuali `/admin/login`.
+   - Mengalihkan pengguna yang belum login ke `/admin/login`.
+2. [`app/admin/actions.js`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/actions.js)
+   - Memastikan setiap Server Action yang melakukan perubahan data (`gantiPassword`) selalu memeriksa validitas sesi admin di sisi server (`supabase.auth.getUser()`) sebelum data diproses/diubah.
+3. [`app/admin/page.jsx`](file:///c:/Users/RENTAL/Documents/grief-verified/app/admin/page.jsx)
+   - Menghapus komponen `CatatanBelumAktif` dari halaman utama admin.
+
+---
+
+### Cara Mengetes
+1. Jalankan aplikasi secara lokal:
+   ```bash
+   npm run dev
+   ```
+2. Uji proteksi rute tanpa login (misalnya di mode Incognito/Private window browser):
+   - Buka `http://localhost:3000/admin` -> otomatis dialihkan ke `http://localhost:3000/admin/login`.
+   - Buka `http://localhost:3000/admin/password` -> otomatis dialihkan ke `http://localhost:3000/admin/login`.
+   - Buka `http://localhost:3000/admin/produk/baru` -> otomatis dialihkan ke `http://localhost:3000/admin/login`.
+3. Uji login dan akses admin:
+   - Buka `http://localhost:3000/admin/login` dan lakukan login dengan email & password yang benar.
+   - Setelah login berhasil, browser dapat membuka `http://localhost:3000/admin` dan sub-halaman admin lainnya tanpa dialihkan.
+   - Periksa bahwa komponen `CatatanBelumAktif` sudah tidak muncul di `/admin`.
 **Perbaikan:**
 
 ## Debugging dan fitur bonus
